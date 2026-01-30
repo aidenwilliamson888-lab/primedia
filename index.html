@@ -283,12 +283,27 @@
         async function fetchMovieDetails() {
             try {
                 const movieId =
-                window.location.hash.replace('#', '') ||
-                window.location.pathname.split('/').pop();
+                const hash = window.location.hash.replace('#', '');
+                const params = new URLSearchParams(hash);
+
+                const lang = params.get('lang') || 'en-US';
+                const movieId = params.get('movie');
+                const tvId = params.get('tv');
 
 
-                const movieResponse = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}`);
-                const movie = await movieResponse.json();
+
+                let apiUrl = null;
+
+if (movieId) {
+    apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=${lang}`;
+} else if (tvId) {
+    apiUrl = `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}&language=${lang}`;
+} else {
+    throw new Error('Invalid content');
+}
+
+const movieResponse = await fetch(apiUrl);
+const movie = await movieResponse.json();
 
                 if (movie.success === false) {
                     throw new Error('Movie not found');
@@ -304,19 +319,19 @@
                 movieContent.innerHTML = `
                     <div class="poster-wrapper" onclick="continueWatching()">
                         <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" 
-                             alt="${movie.title}" 
+                             alt="${movie.title || movie.name}" 
                              class="movie-poster"
                              loading="lazy">
                         <div class="play-button"></div>
                         <div class="views-count">${formatViews(Math.floor(Math.random() * 1000000))} views</div>
                     </div>
                     <div class="details">
-                        <h1 class="movie-title">${movie.title}</h1>
-                        <div class="release-date">Release Date: ${movie.release_date}</div>
+                        <h1 class="movie-title">${movie.title || movie.name}</h1>
+                        <div class="release-date">Release Date: ${movie.release_date || movie.first_air_date}</div>
                     </div>
                 `;
 
-                document.title = `Watch ${movie.title} - NextflixHD`;
+                document.title = `Watch ${movie.title || movie.name} - NextflixHD`;
 
             } catch (error) {
                 console.error('Error fetching movie details:', error);
@@ -386,3 +401,4 @@
 </body>
 
 </html>
+
