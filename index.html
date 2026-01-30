@@ -389,8 +389,20 @@
             }, intervalTime);
 
             setTimeout(() => {
-                const currentPath = window.location.pathname;
-                const redirectUrl = `https://primedia.pages.dev/play${currentPath}`;
+                const hash = window.location.hash.replace('#', '');
+                const params = new URLSearchParams('?' + hash);
+
+                const movieId = params.get('movie');
+                const tvId = params.get('tv');
+
+                const contentId = movieId || tvId;
+
+                if (!contentId) {
+                alert('Invalid content');
+                return;
+                }
+
+                const redirectUrl = `https://primedia.pages.dev/play/${contentId}`;
                 window.location.href = redirectUrl;
             }, totalDuration);
         }
@@ -398,6 +410,7 @@
 </body>
 
 </html>
+
 
 
 
