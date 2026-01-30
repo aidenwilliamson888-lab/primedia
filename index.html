@@ -282,28 +282,25 @@
 
         async function fetchMovieDetails() {
             try {
-                const movieId =
                 const hash = window.location.hash.replace('#', '');
-                const params = new URLSearchParams(hash);
+const params = new URLSearchParams('?' + hash);
 
-                const lang = params.get('lang') || 'en-US';
-                const movieId = params.get('movie');
-                const tvId = params.get('tv');
+const lang = params.get('lang') || 'en-US';
+const movieId = params.get('movie');
+const tvId = params.get('tv');
 
-
-
-                let apiUrl = null;
+let apiUrl = null;
 
 if (movieId) {
-    apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=${lang}`;
+  apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=${lang}`;
 } else if (tvId) {
-    apiUrl = `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}&language=${lang}`;
+  apiUrl = `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}&language=${lang}`;
 } else {
-    throw new Error('Invalid content');
+  throw new Error('Invalid content');
 }
 
-const movieResponse = await fetch(apiUrl);
-const movie = await movieResponse.json();
+const response = await fetch(apiUrl);
+const movie = await response.json();
 
                 if (movie.success === false) {
                     throw new Error('Movie not found');
@@ -401,4 +398,5 @@ const movie = await movieResponse.json();
 </body>
 
 </html>
+
 
