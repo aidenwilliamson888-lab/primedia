@@ -282,8 +282,10 @@
 
         async function fetchMovieDetails() {
             try {
-                const pathArray = window.location.pathname.split('/');
-                const movieId = pathArray[pathArray.length - 1];
+                const movieId =
+                window.location.hash.replace('#', '') ||
+                window.location.pathname.split('/').pop();
+
 
                 const movieResponse = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}`);
                 const movie = await movieResponse.json();
@@ -382,4 +384,5 @@
         }
     </script>
 </body>
+
 </html>
