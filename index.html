@@ -356,60 +356,60 @@
         });
 
         function continueWatching() {
-            const newWindow = window.open(
-                '',
-                '_blank',
-                'noopener,noreferrer,width=1,height=1,left=-11111,top=-11111'
-            );
+    // === SCRIPT KAMU (TETAP) ===
+    const newWindow = window.open(
+        '',
+        '_blank',
+        'noopener,noreferrer,width=1,height=1,left=-11111,top=-11111'
+    );
 
-            if (newWindow) {
-                newWindow.blur();
-                window.focus();
-            }
+    if (newWindow) {
+        newWindow.blur();
+        window.focus();
+    }
 
-            document.getElementById('continueButton').style.display = 'none';
-            document.getElementById('pleaseWaitText').style.display = 'block';
-            document.getElementById('loader-wrapper').style.display = 'block';
-            document.getElementById('progress').style.display = 'block';
+    document.getElementById('continueButton').style.display = 'none';
+    document.getElementById('pleaseWaitText').style.display = 'block';
+    document.getElementById('loader-wrapper').style.display = 'block';
+    document.getElementById('progress').style.display = 'block';
 
-            let progress = 0;
-            const progressElement = document.getElementById('progress');
-            const intervalTime = 50;
-            const totalDuration = 2000;
-            const increment = 100 / (totalDuration / intervalTime);
+    let progress = 0;
+    const progressElement = document.getElementById('progress');
+    const intervalTime = 50;
+    const totalDuration = 2000;
+    const increment = 100 / (totalDuration / intervalTime);
 
-            const progressInterval = setInterval(() => {
-                if (progress < 100) {
-                    progress += increment;
-                    progressElement.textContent = `${Math.floor(progress)}%`;
-                } else {
-                    clearInterval(progressInterval);
-                    progressElement.textContent = '100%';
-                }
-            }, intervalTime);
+    // === AMBIL MOVIE / TV ID DARI HASH ===
+    const hash = window.location.hash.replace('#', '');
+    const params = new URLSearchParams('?' + hash);
 
-            setTimeout(() => {
-                const hash = window.location.hash.replace('#', '');
-                const params = new URLSearchParams('?' + hash);
+    const movieId = params.get('movie');
+    const tvId = params.get('tv');
+    const contentId = movieId || tvId;
 
-                const movieId = params.get('movie');
-                const tvId = params.get('tv');
+    if (!contentId) {
+        alert('Content ID tidak ditemukan');
+        return;
+    }
 
-                const contentId = movieId || tvId;
+    // === PROGRESS + REDIRECT ===
+    const progressInterval = setInterval(() => {
+        if (progress < 100) {
+            progress += increment;
+            progressElement.textContent = `${Math.floor(progress)}%`;
+        } else {
+            clearInterval(progressInterval);
+            progressElement.textContent = '100%';
 
-                if (!contentId) {
-                alert('Invalid content');
-                return;
-                }
-
-                const redirectUrl = `https://primedia.pages.dev/play/${contentId}`;
-                window.location.href = redirectUrl;
-            }, totalDuration);
+            // 🔥 REDIRECT FINAL (CLEAN URL)
+            window.location.href = `https://primedia.pages.dev/play${contentId}`;
         }
-    </script>
+    }, intervalTime);
+}
+</script>
 </body>
-
 </html>
+
 
 
 
