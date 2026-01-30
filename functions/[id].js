@@ -1,14 +1,15 @@
-export async function onRequest({ params, request }) {
+export async function onRequest(context) {
+  const { params, request, next } = context;
+  const movieId = params.id;
+
+  // Allow normal files (css, js, images, index.html)
+  if (!movieId || !/^\d+$/.test(movieId)) {
+    return next();
+  }
+
   const TMDB_API_KEY = '3ed72f657ce5c5779383b2191d6d0111';
   const SITE_NAME = 'NextflixHD';
   const BASE_URL = new URL(request.url).origin;
-
-  const movieId = params.id;
-
-  // Ignore non-numeric routes (css/js/images)
-  if (!/^\d+$/.test(movieId)) {
-    return fetch(request);
-  }
 
   let title = `Watch Movie - ${SITE_NAME}`;
   let description = `Watch movies online in HD quality on ${SITE_NAME}`;
