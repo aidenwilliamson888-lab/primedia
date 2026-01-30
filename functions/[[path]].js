@@ -36,7 +36,7 @@ export async function onRequest(context) {
   }
 
   const TMDB_API_KEY = '3ed72f657ce5c5779383b2191d6d0111';
-  const SITE_NAME = 'NextflixHD';
+  const SITE_NAME = 'PrimeMedia';
   const BASE_URL = url.origin;
 
   let title = `Watch ${type === 'tv' ? 'TV Show' : 'Movie'} - ${SITE_NAME}`;
