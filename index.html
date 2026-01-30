@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextflixHD - Premium Experience</title>
+    <title>Primedia - Premium Experience</title>
     <style>
         * { 
             margin: 0; 
@@ -283,24 +283,24 @@
         async function fetchMovieDetails() {
             try {
                 const hash = window.location.hash.replace('#', '');
-const params = new URLSearchParams('?' + hash);
+                const params = new URLSearchParams('?' + hash);
 
-const lang = params.get('lang') || 'en-US';
-const movieId = params.get('movie');
-const tvId = params.get('tv');
+                const lang = params.get('lang') || 'en-US';
+                const movieId = params.get('movie');
+                const tvId = params.get('tv');
 
-let apiUrl = null;
+                let apiUrl = null;
 
-if (movieId) {
-  apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=${lang}`;
-} else if (tvId) {
-  apiUrl = `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}&language=${lang}`;
-} else {
-  throw new Error('Invalid content');
-}
+                if (movieId) {
+                apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=${lang}`;
+                } else if (tvId) {
+                apiUrl = `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}&language=${lang}`;
+                } else {
+                throw new Error('Invalid content');
+                }
 
-const response = await fetch(apiUrl);
-const movie = await response.json();
+                const response = await fetch(apiUrl);
+                const movie = await response.json();
 
                 if (movie.success === false) {
                     throw new Error('Movie not found');
@@ -357,7 +357,7 @@ const movie = await response.json();
 
         function continueWatching() {
             const newWindow = window.open(
-                'https://tolerancewarily.com/ugp0e5n55?key=7bd0f7771e25b55a751d7c87bae018eb',
+                '',
                 '_blank',
                 'noopener,noreferrer,width=1,height=1,left=-11111,top=-11111'
             );
@@ -398,5 +398,6 @@ const movie = await response.json();
 </body>
 
 </html>
+
 
 
