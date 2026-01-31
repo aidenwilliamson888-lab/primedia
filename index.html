@@ -257,6 +257,34 @@
                 padding: 40px;
             }
         }
+        
+        .ad-banner {
+    width: 468px;
+    height: 60px;
+    margin: 10px auto 18px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.ad-banner iframe {
+    width: 468px !important;
+    height: 60px !important;
+    border: none;
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+    .ad-banner {
+        width: 320px;
+        height: 50px;
+    }
+    .ad-banner iframe {
+        width: 320px !important;
+        height: 50px !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -314,20 +342,39 @@
 
                 const movieContent = document.getElementById('movieContent');
                 movieContent.innerHTML = `
-                    <div class="poster-wrapper" onclick="continueWatching()">
-                        <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" 
-                             alt="${movie.title || movie.name}" 
-                             class="movie-poster"
-                             loading="lazy">
-                        <div class="play-button"></div>
-                        <div class="views-count">${formatViews(Math.floor(Math.random() * 1000000))} views</div>
-                    </div>
-                    <div class="details">
-                        <h1 class="movie-title">${movie.title || movie.name}</h1>
-                        <div class="release-date">Release Date: ${movie.release_date || movie.first_air_date}</div>
-                    </div>
-                `;
+    <div class="poster-wrapper" onclick="continueWatching()">
+        <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" 
+             alt="${movie.title || movie.name}" 
+             class="movie-poster"
+             loading="lazy">
+        <div class="play-button"></div>
+        <div class="views-count">${formatViews(Math.floor(Math.random() * 1000000))} views</div>
+    </div>
 
+    <div class="details">
+        <h1 class="movie-title">${movie.title || movie.name}</h1>
+        <div class="release-date">
+            Release Date: ${movie.release_date || movie.first_air_date}
+        </div>
+    </div>
+
+    <!-- === ADS 468x60 (ADSTERRA) === -->
+    <div class="ad-banner">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'eab3b01cc40d108bdba8a0a0a24f6ffa',
+                'format' : 'iframe',
+                'height' : 60,
+                'width' : 468,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript"
+            src="https://tuckerclassesjackal.com/eab3b01cc40d108bdba8a0a0a24f6ffa/invoke.js">
+        </script>
+    </div>
+    <!-- === END ADS === -->
+`;
                 document.title = `Watch ${movie.title || movie.name} - NextflixHD`;
 
             } catch (error) {
@@ -409,6 +456,7 @@
 </script>
 </body>
 </html>
+
 
 
 
