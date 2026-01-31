@@ -3,52 +3,51 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const parts = url.pathname.split('/').filter(Boolean);
 
-  // Allow static files
   if (parts.length === 0) return next();
 
   let lang = 'en-US';
   let type = 'movie';
   let id = null;
 
-  // URL formats:
-  // /123
-  // /fr/123
-  // /tv/123
-  // /fr/tv/123
+  // ✅ SAFE URL PARSING
   if (parts.length === 1 && /^\d+$/.test(parts[0])) {
     id = parts[0];
-  } else if (parts.length === 2 && /^\d+$/.test(parts[1])) {
+  }
+  else if (parts.length === 2 && /^[a-z]{2}$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
     lang = `${parts[0]}-${parts[0].toUpperCase()}`;
     id = parts[1];
-  } else if (parts.length === 2 && parts[0] === 'tv' && /^\d+$/.test(parts[1])) {
+  }
+  else if (parts.length === 2 && parts[0] === 'tv' && /^\d+$/.test(parts[1])) {
     type = 'tv';
     id = parts[1];
-  } else if (
+  }
+  else if (
     parts.length === 3 &&
+    /^[a-z]{2}$/.test(parts[0]) &&
     parts[1] === 'tv' &&
     /^\d+$/.test(parts[2])
   ) {
     lang = `${parts[0]}-${parts[0].toUpperCase()}`;
     type = 'tv';
     id = parts[2];
-  } else {
-    return next();
+  }
+  else {
+    return next(); // ⬅️ IMPORTANT (no crash)
   }
 
   const TMDB_API_KEY = '3ed72f657ce5c5779383b2191d6d0111';
   const SITE_NAME = 'NextflixHD';
-  const BASE_URL = url.origin;
 
   let title = `Watch ${type === 'tv' ? 'TV Show' : 'Movie'} - ${SITE_NAME}`;
-  let description = `Watch ${
-    type === 'tv' ? 'TV shows' : 'movies'
-  } online in HD quality on ${SITE_NAME}`;
-  let image = `${BASE_URL}/default-og.jpg`;
+  let description = `Watch online in HD quality on ${SITE_NAME}`;
+  let image = `${url.origin}/default-og.jpg`;
 
   try {
-    const tmdbUrl = `https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}&language=${lang}`;
-    const res = await fetch(tmdbUrl);
+    const tmdbUrl =
+      `https://api.themoviedb.org/3/${type}/${id}` +
+      `?api_key=${TMDB_API_KEY}&language=${lang}`;
 
+    const res = await fetch(tmdbUrl);
     if (res.ok) {
       const data = await res.json();
       const name = data.title || data.name;
@@ -58,9 +57,7 @@ export async function onRequest(context) {
         '';
 
       title = `${name}${year ? ` (${year})` : ''} - ${SITE_NAME}`;
-      description =
-        data.overview ||
-        `Watch ${name} online in HD quality on ${SITE_NAME}.`;
+      description = data.overview || description;
 
       if (data.backdrop_path) {
         image = `https://image.tmdb.org/t/p/original${data.backdrop_path}`;
@@ -68,7 +65,9 @@ export async function onRequest(context) {
         image = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    // fail silently (OG fallback)
+  }
 
   const redirectHash =
     type === 'tv'
@@ -101,6 +100,9 @@ location.replace("/index.html#${redirectHash}");
 </html>`;
 
   return new Response(html, {
-    headers: { "content-type": "text/html; charset=UTF-8" }
+    headers: {
+      'content-type': 'text/html; charset=UTF-8',
+      'cache-control': 'public, max-age=3600'
+    }
   });
 }
