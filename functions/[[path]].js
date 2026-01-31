@@ -1,92 +1,74 @@
 export async function onRequest(context) {
-  const { request, next, env } = context;
+  const { request, next } = context;
   const url = new URL(request.url);
   const parts = url.pathname.split('/').filter(Boolean);
 
+  // Allow static files
   if (parts.length === 0) return next();
 
   let lang = 'en-US';
-let type = 'movie';
-let id = null;
+  let type = 'movie';
+  let id = null;
 
-// Safe parsing
-if (parts.length === 1 && /^\d+$/.test(parts[0])) {
-  id = parts[0];
-}
-else if (parts.length === 2 && /^[a-z]{2}$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
-  lang = `${parts[0]}-${parts[0].toUpperCase()}`;
-  id = parts[1];
-}
-else if (parts.length === 2 && parts[0] === 'tv' && /^\d+$/.test(parts[1])) {
-  type = 'tv';
-  id = parts[1];
-}
-else if (
-  parts.length === 3 &&
-  /^[a-z]{2}$/.test(parts[0]) &&
-  parts[1] === 'tv' &&
-  /^\d+$/.test(parts[2])
-) {
-  lang = `${parts[0]}-${parts[0].toUpperCase()}`;
-  type = 'tv';
-  id = parts[2];
-}
-else {
-  return next(); // ⬅️ SAFE EXIT (no crash)
-}
+  // URL formats:
+  // /123
+  // /fr/123
+  // /tv/123
+  // /fr/tv/123
+  if (parts.length === 1 && /^\d+$/.test(parts[0])) {
+    id = parts[0];
+  } else if (parts.length === 2 && /^\d+$/.test(parts[1])) {
+    lang = `${parts[0]}-${parts[0].toUpperCase()}`;
+    id = parts[1];
+  } else if (parts.length === 2 && parts[0] === 'tv' && /^\d+$/.test(parts[1])) {
+    type = 'tv';
+    id = parts[1];
+  } else if (
+    parts.length === 3 &&
+    parts[1] === 'tv' &&
+    /^\d+$/.test(parts[2])
+  ) {
+    lang = `${parts[0]}-${parts[0].toUpperCase()}`;
+    type = 'tv';
+    id = parts[2];
+  } else {
+    return next();
+  }
 
   const TMDB_API_KEY = '3ed72f657ce5c5779383b2191d6d0111';
   const SITE_NAME = 'NextflixHD';
+  const BASE_URL = url.origin;
 
-  // 🔑 CACHE KEY
-  const cacheKey = `${type}:${id}:${lang}`;
-
-  let data = await env.TMDB_CACHE.get(cacheKey, { type: 'json' });
-
-  // 🌐 FETCH TMDB IF CACHE MISS
-  if (!data) {
-    try {
-      const tmdbUrl =
-        `https://api.themoviedb.org/3/${type}/${id}` +
-        `?api_key=${TMDB_API_KEY}&language=${lang}`;
-
-      const res = await fetch(tmdbUrl);
-      if (!res.ok) throw new Error('TMDB error');
-
-      data = await res.json();
-
-      // 🧠 SAVE TO KV (7 days)
-      await env.TMDB_CACHE.put(
-        cacheKey,
-        JSON.stringify(data),
-        { expirationTtl: 60 * 60 * 24 * 7 }
-      );
-    } catch (e) {
-      data = null;
-    }
-  }
-
-  // OG fallback
   let title = `Watch ${type === 'tv' ? 'TV Show' : 'Movie'} - ${SITE_NAME}`;
-  let description = `Watch online in HD quality on ${SITE_NAME}`;
-  let image = `${url.origin}/default-og.jpg`;
+  let description = `Watch ${
+    type === 'tv' ? 'TV shows' : 'movies'
+  } online in HD quality on ${SITE_NAME}`;
+  let image = `${BASE_URL}/default-og.jpg`;
 
-  if (data) {
-    const name = data.title || data.name;
-    const year =
-      data.release_date?.slice(0, 4) ||
-      data.first_air_date?.slice(0, 4) ||
-      '';
+  try {
+    const tmdbUrl = `https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}&language=${lang}`;
+    const res = await fetch(tmdbUrl);
 
-    title = `${name}${year ? ` (${year})` : ''} - ${SITE_NAME}`;
-    description = data.overview || description;
+    if (res.ok) {
+      const data = await res.json();
+      const name = data.title || data.name;
+      const year =
+        data.release_date?.slice(0, 4) ||
+        data.first_air_date?.slice(0, 4) ||
+        '';
 
-    if (data.backdrop_path) {
-      image = `https://image.tmdb.org/t/p/original${data.backdrop_path}`;
-    } else if (data.poster_path) {
-      image = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+      title = `${name}${year ? ` (${year})` : ''} - ${SITE_NAME}`;
+      description =
+        data.overview ||
+        `Watch ${name} online in HD quality on ${SITE_NAME}.`;
+
+      if (data.backdrop_path) {
+        image = `https://image.tmdb.org/t/p/original${data.backdrop_path}`;
+      } else if (data.poster_path) {
+        image = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+      }
     }
-  }
+  } catch (e) {}
 
   const redirectHash =
     type === 'tv'
@@ -119,9 +101,6 @@ location.replace("/index.html#${redirectHash}");
 </html>`;
 
   return new Response(html, {
-    headers: {
-      'content-type': 'text/html; charset=UTF-8',
-      'cache-control': 'public, max-age=86400'
-    }
+    headers: { "content-type": "text/html; charset=UTF-8" }
   });
 }
