@@ -6,25 +6,34 @@ export async function onRequest(context) {
   if (parts.length === 0) return next();
 
   let lang = 'en-US';
-  let type = 'movie';
-  let id = null;
+let type = 'movie';
+let id = null;
 
-  // URL parsing
-  if (parts.length === 1 && /^\d+$/.test(parts[0])) {
-    id = parts[0];
-  } else if (parts.length === 2 && /^\d+$/.test(parts[1])) {
-    lang = `${parts[0]}-${parts[0].toUpperCase()}`;
-    id = parts[1];
-  } else if (parts.length === 2 && parts[0] === 'tv') {
-    type = 'tv';
-    id = parts[1];
-  } else if (parts.length === 3 && parts[1] === 'tv') {
-    lang = `${parts[0]}-${parts[0].toUpperCase()}`;
-    type = 'tv';
-    id = parts[2];
-  } else {
-    return next();
-  }
+// Safe parsing
+if (parts.length === 1 && /^\d+$/.test(parts[0])) {
+  id = parts[0];
+}
+else if (parts.length === 2 && /^[a-z]{2}$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
+  lang = `${parts[0]}-${parts[0].toUpperCase()}`;
+  id = parts[1];
+}
+else if (parts.length === 2 && parts[0] === 'tv' && /^\d+$/.test(parts[1])) {
+  type = 'tv';
+  id = parts[1];
+}
+else if (
+  parts.length === 3 &&
+  /^[a-z]{2}$/.test(parts[0]) &&
+  parts[1] === 'tv' &&
+  /^\d+$/.test(parts[2])
+) {
+  lang = `${parts[0]}-${parts[0].toUpperCase()}`;
+  type = 'tv';
+  id = parts[2];
+}
+else {
+  return next(); // ⬅️ SAFE EXIT (no crash)
+}
 
   const TMDB_API_KEY = '3ed72f657ce5c5779383b2191d6d0111';
   const SITE_NAME = 'NextflixHD';
